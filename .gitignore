@@ -1,2 +1,4 @@
 fat.img
-
+KERNEL64.SYS
+build/
+*.swp
