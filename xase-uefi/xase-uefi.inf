@@ -1,0 +1,34 @@
+## @file
+#  Simple xase UEFI loader.
+#  
+#  This is just a tiny wrapper around the EDKII embedded Lua lib,
+#  running a Lua script that starts the system proper.
+#  
+#  Oh... and the 'loader' does have a bunch of util funcs, too.
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = XaseUefi
+  FILE_GUID                      = ea003635-3b81-4b2c-9ae9-7de325fb275a
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 0.1
+  ENTRY_POINT                    = UefiMain
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = X64
+#
+
+[Sources]
+  xase-uefi.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+

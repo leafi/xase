@@ -8,7 +8,13 @@
 cp tools/empty_64mb_fat32.img fat.img
 mmd -i fat.img ::/EFI
 mmd -i fat.img ::/EFI/BOOT
+mmd -i fat.img ::/XASE
+
+cp XaseUefi.efi BOOTX64.EFI
 mcopy -i fat.img BOOTX64.EFI ::/EFI/BOOT
+
+cp ~/because/tmp/kernel64.sys KERNEL64.SYS
+mcopy -i fat.img KERNEL64.SYS ::/XASE
 
 #mkdir iso
 #cp fat.img iso/
