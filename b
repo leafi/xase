@@ -10,15 +10,19 @@ mkdir build || exit
 echo compiling kernel64.sys
 
 echo  kernel.c
-$HOME/opt/cross/bin/x86_64-elf-gcc -m64 -o build/kernel.o -c kernel.c -Wall -Wextra -nostdlib -nostartfiles -nodefaultlibs -nostdinc -ffreestanding || exit
+$HOME/opt/cross/bin/x86_64-elf-gcc -g -m64 -o build/kernel.o -c kernel.c -Wall -Wextra -nostdlib -nostartfiles -nodefaultlibs -nostdinc -ffreestanding || exit
 echo  lua.c
-$HOME/opt/cross/bin/x86_64-elf-gcc -m64 -o build/lua.o -c lua.c -Wall -Wextra -nostdlib -nostartfiles -nodefaultlibs -nostdinc -ffreestanding -I ./libs/newlib/include -I ./libs/lua-5.3/include -I $HOME/opt/cross/lib/gcc/x86_64-elf/4.8.1/include || exit
+$HOME/opt/cross/bin/x86_64-elf-gcc -g -m64 -o build/lua.o -c lua.c -Wall -Wextra -nostdlib -nostartfiles -nodefaultlibs -nostdinc -ffreestanding -I ./libs/newlib/include -I ./libs/lua-5.3/include -I $HOME/opt/cross/lib/gcc/x86_64-elf/4.8.1/include || exit
+
+echo the.lua
+mono tools/LuaToHex/LuaToHex/bin/Debug/LuaToHex.exe the.lua >build/the-lua.c || exit
+$HOME/opt/cross/bin/x86_64-elf-gcc -g -m64 -o build/the-lua.o -c build/the-lua.c -Wall -Wextra -nostdlib -nostartfiles -nodefaultlibs -nostdinc -ffreestanding || exit
 
 echo  bits.asm
-/usr/local/bin/nasm -f elf64 -o build/bits.o bits.asm || exit
+#/usr/local/bin/nasm -f elf64 -o build/bits.o bits.asm || exit
 
 echo linking kernel64.sys
-$HOME/opt/cross/bin/x86_64-elf-ld -T linker64.ld -o KERNEL64.SYS build/kernel.o build/bits.o build/lua.o libs/lua-5.3/lib/liblua.a libs/newlib/lib/libm.a libs/newlib/lib/libc.a libs/newlib/lib/libnosys.a || exit
+$HOME/opt/cross/bin/x86_64-elf-ld -T linker64.ld -o KERNEL64.SYS build/kernel.o build/the-lua.o build/lua.o libs/lua-5.3/lib/liblua.a libs/newlib/lib/libm.a libs/newlib/lib/libc.a libs/newlib/lib/libnosys.a || exit
 
 
 # clone empty fat32 image & add files
@@ -38,5 +42,5 @@ mcopy -i fat.img KERNEL64.SYS ::/XASE
 #xorriso -as mkisofs -R -f -e fat.img -no-emul-boot -o cdimage.iso iso
 
 # boot as if usb stick
-qemu-system-x86_64 -pflash OVMF.fd -usb -usbdevice disk::fat.img
+qemu-system-x86_64 -pflash OVMF.fd -monitor stdio -usb -usbdevice disk::fat.img
 

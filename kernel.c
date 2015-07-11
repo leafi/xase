@@ -6,6 +6,8 @@ void printk(char* s);
 extern void outb(unsigned short port, unsigned char val);
 extern unsigned char inb(unsigned short port);
 
+extern void disable_int();
+
 //extern void pci_thing();
 
 //extern void some_ps2_stuff();
@@ -42,9 +44,23 @@ typedef struct {
     long GOPSize;
 } Smuggle;
 
+Smuggle* smuggled;
+
+Smuggle smuggle2;
+
+unsigned char* fb1;
+
 void _start()
 {
-  Smuggle* smuggled = (Smuggle*) 0x400000;
+  disable_int();
+
+  smuggled = (Smuggle*) 0x400000;
+  smuggle2.GOPBase = smuggled->GOPBase;
+  smuggle2.GOPSize = smuggled->GOPSize;
+  smuggled = &smuggle2;
+  
+  fb1 = smuggled->GOPBase;
+  fb1 += 3 * (smuggled->GOPSize / 5);
 
   unsigned char* fb = smuggled->GOPBase;
   unsigned char* fbend = smuggled->GOPBase;
@@ -57,8 +73,8 @@ void _start()
   }
 
   // VERY HACK
-  kmstart = (void*)0x200000;
-  kmlimit = (void*)0x300000;
+  kmstart = (void*)0x2000000;
+  kmlimit = (void*)0x2100000;
 
   lua_stuff();
 
@@ -66,14 +82,29 @@ void _start()
 
 }
 
+
 // Simple memory allocation.
 // 'Real' memory allocation is performed after setup is done by taking
 //  control of a huge chunk of memory, and another malloc func does caretaking.
 void* kmalloc(long bytes) {
   void* m = kmstart;
   kmstart += bytes;
+  fb1++;
+  *fb1 = 255;
+  fb1++;
+  fb1++;
+  fb1++;
   if (kmstart >= kmlimit) {
     //printk("OUT OF MEMORY!\n");
+    unsigned char* fb = smuggled->GOPBase;
+    unsigned char* fbend = smuggled->GOPBase;
+    fbend += smuggled->GOPSize;
+    for (; fb < fbend; fb += 4) {
+        fb[1] = 0;
+        fb[0] = 0;
+        fb[2] = 255;
+
+    }
     while(1) {}
   }
   return m;

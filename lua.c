@@ -28,6 +28,27 @@ extern void irq_mask(unsigned char irq, unsigned char mask);
 
 extern void io_wait();
 
+typedef struct {
+    unsigned char* GOPBase;
+    long GOPSize;
+} Smuggle;
+
+extern Smuggle* smuggled;
+
+extern const char* lcode;
+
+static int lunsmuggleGOPBase(lua_State *L)
+{
+    lua_pushunsigned(L, (lua_Unsigned) smuggled->GOPBase);
+    return 1;
+}
+
+static int lunsmuggleGOPSize(lua_State *L)
+{
+    lua_pushunsigned(L, (lua_Unsigned) smuggled->GOPSize);
+    return 1;
+}
+
 static int lmalloc(lua_State *L)
 {
 	lua_pushunsigned(L, (lua_Unsigned) malloc(lua_tounsigned(L, 1)));
@@ -276,6 +297,8 @@ static const luaL_Reg bclib[] = {
 	{"clearlbuffer", clearlbuffer},
 	{"addlbuffer", addlbuffer},
 	{"finishlbuffer", finishlbuffer},*/
+    {"unsmuggleGOPBase", lunsmuggleGOPBase},
+    {"unsmuggleGOPSize", lunsmuggleGOPSize},
 	{"inb", linb},
 	{"inw", linw},
 	{"ini", lini},
@@ -320,213 +343,86 @@ void lua_stuff()
 
 	//printk("lua_stuff() starting\n");
 
-	lua_State *l;
-	l = luaL_newstate();
+	lua_State *l = luaL_newstate();
 
+    unsigned char* fb = smuggled->GOPBase;
+    unsigned char* fbend = smuggled->GOPBase;
+    fb += (smuggled->GOPSize / 4);
+    fbend += (smuggled->GOPSize / 4);
+    for (; fb < fbend; fb += 4) {
+        fb[0] = 255;
+        fb[1] = 0;
+        fb[2] = 0;
+    }
+    
 	// shh
 	globalL = l;
 
-	luaL_openlibs(l);
-	open_private_libs(l);
 
-	const char* lcode =
-		"-- lua.c lua\n"
-		"function is_fat(id)\n"
-		"	 return (id == 1) or (id == 4) or (id == 6) or (id == 0xb) or (id == 0xc) or (id == 0xe) or (id == 0x11) or (id == 0x14) or (id == 0x16) or (id == 0x1b) or (id == 0x1c) or (id == 0x1e)\n"
-		"end\n"
-		"\n"
-		"function fat_investigate(lba)\n"
-		"  -- print('base lba is ' .. lba)\n"
-		"  local base = lba * 512\n"
-		"  local total_sectors_16 = bc.rdiskw(base + 19)\n"
-		"  local bytes_per_sector = bc.rdiskw(base + 11)\n"
-		"  local sectors_per_cluster = bc.rdiskb(base + 0xd)\n"
-		"  local reserved_sector_count = bc.rdiskw(base + 14)\n"
-		"  -- print('reserved_sector_count: ' .. reserved_sector_count)\n"
-		"  local table_count = bc.rdiskb(base + 16)\n"
-		"  local table_size_16 = bc.rdiskw(base + 22)\n"
-		"  local root_entry_count = bc.rdiskw(base + 17)\n"
-		"  -- print('root_entry_count: ' .. root_entry_count)\n"
-		"  local num_fats = bc.rdiskb(base + 0x10)\n"
-		"  local sectors_per_fat = bc.rdiskw(base + 0x16)\n"
-		"  -- print('num_fats: ' .. num_fats)\n"
-		"  -- print('sectors_per_fat: ' .. sectors_per_fat)\n"
-		"	 local root_dir_sectors = ((root_entry_count * 32) + (bytes_per_sector - 1)) / bytes_per_sector\n"
-		"  local first_data_sector = reserved_sector_count + (table_count * table_size_16)\n"
-		"  local data_sectors = total_sectors_16 - (reserved_sector_count + (table_count * table_size_16) + root_dir_sectors)\n"
-		"  local total_clusters = data_sectors / bc.rdiskb(base + 13)\n"
-		"  local fat_region = lba + reserved_sector_count\n"
-		"  local root_directory_region = fat_region + num_fats * sectors_per_fat\n"
-		"  -- temp hack - fix when we get division back!\n"
-		"  local data_region = root_directory_region + 32\n"
-		"  local fat12 = false\n"
-		"  local fat16 = false\n"
-		"  local fat32 = false\n"
-		"  if total_clusters < 4085 then\n"
-		"    fat12 = true\n"
-		"  elseif total_clusters < 65525 then\n"
-		"    fat16 = true\n"
-		"  else\n"
-		"    fat32 = true\n"
-		"  end\n"
-		"  -- print('bytes per fat sector is ' .. bytes_per_sector)\n"
-		"  -- print('sectors per cluster is ' .. sectors_per_cluster)\n"
-		"  if fat12 then print('FAT12') end\n"
-		"  if fat16 then print('FAT16') end\n"
-		"  if fat32 then print('FAT32') end\n"
-		"  if (fat12 or fat32) then\n"
-		"    print('TODO: fat12/fat32. sorry! (shouldn\\'t be much work, though.)')\n"
-		"  else\n"
-		"    -- print('first_data_sector: ' .. first_data_sector)\n"
-		"    -- local sb = 512 * (first_data_sector + (root_entry_count * 32 / bytes_per_sector))\n"
-		"    -- local sb = 512 * (first_data_sector + 32)\n"
-		"    local sb = 512 * root_directory_region\n"
-		"    -- print(root_entry_count * 32)\n"
-		"    -- print(bytes_per_sector)\n"
-		"    -- print(16384.0 / 512.0)\n"
-		"    -- print((root_entry_count * 32) / bytes_per_sector)\n"
-		"    -- print((first_data_sector + (root_entry_count * 32 / bytes_per_sector)))\n"
-		"    -- print(sb)\n"
-		"    local inc = 0\n"
-		"    local j = 0\n"
-		"    local foundlbc = false\n"
-		"    -- print('TODO: interrogate FAT in case directory is long')\n"
-		"    while (inc < (root_entry_count * 32)) do\n"
-		"      -- print('j is ' .. j)\n"
-		"      -- print('sb is ' .. sb)\n"
-		"      -- print(' and inc is ' .. inc)\n"
-		"      -- print('sb+inc == ' .. (sb + inc))\n"
-		"      if ((bc.rdiskb(sb + inc) == 0) or (bc.rdiskb(sb + inc) == 0xe5)) then\n"
-		"        -- print('no entry; continuing')\n"
-		"      else\n"
-		"        local a = ''\n"
-		"        local b = ''\n"
-		"        local attrib = bc.rdiskb(sb + inc + 11)\n"
-		"        if ((attrib ~= 0xf) and (attrib ~= 0x8)) then\n"
-		"          for i = 0,10 do\n"
-		"            -- print('i stuff')\n"
-		"            local c = bc.rdiskb(sb + inc + i)\n"
-		"            if i == 8 then\n"
-		"              a = a .. '.'\n"
-		"            end\n"
-		"            if ((c ~= 0) and (c ~= 0x20) and (c ~= 10)) then\n"
-		"              a = a .. string.char(c)\n"
-		"              b = b .. c .. ' '\n"
-		"            end\n"
-		"          end\n"
-		"          -- is this the folder we're looking for?\n"
-		"          if ((a == 'LBECAUSE.') and (bit64.band(bc.rdiskb(sb + inc + 11), 0x10) > 0)) then\n"
-		"						 foundlbc = true\n"
-		"            -- print('found LBECAUSE folder. this is the disk!')\n"
-		"            -- print('given cluster is ' .. bc.rdiskw(sb + inc + 26))\n"
-		"            --local lbecause_entry_sector = 512 * (sectors_per_cluster * bc.rdiskw(sb + inc + 26))\n"
-		"            local lbecause_entry_sector = data_region + (sectors_per_cluster * (bc.rdiskw(sb + inc + 26) - 2))\n"
-		"						 -- temp hack\n"
-		"            --sb = lbecause_entry_sector\n"
-		"            --sb = 501824\n"
-		"            -- print('TODO: interrogate FAT in case subdirectory \\'lbecause\\' is long')\n"
-		"            local sb2 = 512 * lbecause_entry_sector\n"
-		"						 local inc2 = 0\n"
-		"						 local lua_files = {}\n"
-		"						 while (inc2 < 512) do\n"
-		"							 if (bc.rdiskb(sb2 + inc2) == 0) then\n"
-		"							   break\n"
-		"              else\n"
-		"								 local att = bc.rdiskb(sb2 + inc2 + 11)\n"
-		"								 local a = ''\n"
-		"								 if (att ~= 0xf) then\n"
-		"								   for i = 0,10 do\n"
-		"									   local c = bc.rdiskb(sb2 + inc2 + i)\n"
-		"										 if i == 8 then\n"
-		"										   a = a .. '.'\n"
-		"										 end\n"
-		"										 if ((c ~= 0) and (c ~= 0x20) and (c ~= 10)) then\n"
-		"										   a = a .. string.char(c)\n"
-		"										 end\n"
-		"									 end\n"
-		"								   if string.sub(a, -4) == '.LUA' then\n"
-		"										 local size = bc.rdiski(sb2 + inc2 + 0x1c)\n"
-		"									   --print('reading lua file ' .. a .. ' (' .. size .. ' bytes)')\n"
-		"										 local cont = bc.rdiskw(sb2 + inc2 + 0x1a)\n"
-		"										 bc.clearlbuffer()\n"
-		"										 while ((cont > 0x0002) and (cont < 0xfff8)) do\n"
-		"											 local d = data_region + (sectors_per_cluster * (cont - 2))\n"
-		"											 -- read file part\n"
-		"											 bc.addlbuffer(512 * d, sectors_per_cluster)\n"
-		"											 --print(a .. ': [' .. string.format('%x', cont) .. '] ' .. d)\n"
-		"										   cont = bc.rdiskw(512 * fat_region + 2 * cont)\n"
-		"										 end\n"
-		"										 local e = {a, bc.finishlbuffer(size)}\n"
-		"										 if a == 'RUN.LUA' then\n"
-		"										   table.insert(lua_files, e)\n"
-		"										 else\n"
-		"										   table.insert(lua_files, 1, e)\n"
-		"										 end\n"
-		"										 -- print(e[2])\n"
-		"									 end\n"
-		"								 end\n"
-		"              end\n"
-		"							 inc2 = inc2 + 32\n"
-		"						 end\n"
-		"						 print('* starting Lua *')\n"
-		"						 for k,v in pairs(lua_files) do\n"
-		"							 --print(v[1])\n"
-		"						   assert(loadstring('-- ' .. v[1] .. '\\n' .. v[2]))()\n"
-		"						 end\n"
-		"					   print('Done.')\n"
-		"						 break\n"
-		"          end\n"
-		"        end\n"
-		"        --print(a)\n"
-		"        -- print(b)\n"
-		"      end\n"
-		"			 inc = inc + 32\n"
-		"      j = j + 1\n"
-		"    end\n"
-		"  	 if not foundlbc then print('Well, I failed to find LBECAUSE on a fat16 part.') end\n"
-		"  end\n"
-		"  return\n"
-		"end\n"
-		"\n"
-		"print('TODO: check bus 0 slave disk, bus 1 master & slave')\n"
-		"print('TODO: extended partitions')\n"
-		"print('TODO: verify this is in fact an mbr')\n"
-		"print('TODO: floppies, cds')\n"
-		"-- print('is partition 1 bootable? ' .. (bc.rdiskb(446) == 0x80 and 'yes' or 'no'))\n"
-		"-- print('partition 1 start lba is ' .. bc.rdiski(446 + 8))\n"
-		"-- print('partition 1 total sectors is ' .. bc.rdiski(446 + 12))\n"
-		"print('partition 1 part type ' .. bc.rdiskb(446 + 4))\n"
-		"print('partition 2 part type ' .. bc.rdiskb(462 + 4))\n"
-		"print('partition 3 part type ' .. bc.rdiskb(478 + 4))\n"
-		"print('partition 4 part type ' .. bc.rdiskb(494 + 4))\n"
-		"if is_fat(bc.rdiskb(446 + 4)) then\n"
-		"  print('investigating partition 1')\n"
-		"  fat_investigate(bc.rdiski(446 + 8))\n"
-		"end\n"
-		"if is_fat(bc.rdiskb(462 + 4)) then\n"
-		"  print('investigating partition 2')\n"
-		"  fat_investigate(bc.rdiski(462 + 8))\n"
-		"end\n"
-		"if is_fat(bc.rdiskb(478 + 4)) then\n"
-		"  print('investigating partition 3')\n"
-		"  fat_investigate(bc.rdiski(478 + 8))\n"
-		"end\n"
-		"if is_fat(bc.rdiskb(494 + 4)) then\n"
-		"  print('investigating partition 4')\n"
-		"  fat_investigate(bc.rdiski(494 + 8))\n"
-		"end\n"
-		;
+
+	luaL_openlibs(l);
+
+    fb = smuggled->GOPBase;
+    fbend = smuggled->GOPBase;
+    fb += (smuggled->GOPSize / 4);
+    fb += (smuggled->GOPSize / 4);
+    fbend += (smuggled->GOPSize / 4);
+    for (; fb < fbend; fb += 4) {
+        fb[0] = 255;
+        fb[1] = 0;
+        fb[2] = 0;
+    }
+
+	open_private_libs(l);
 
 	int lsv = luaL_loadstring(l, lcode);
 	if (lsv != LUA_OK) {
 		if (lsv == LUA_ERRSYNTAX) {
 			//printk("LUA_ERRSYNTAX\n");
+            unsigned char* fb = smuggled->GOPBase;
+            unsigned char* fbend = smuggled->GOPBase;
+            fbend += (smuggled->GOPSize / 4);
+            for (; fb < fbend; fb += 4) {
+                fb[2] = 255;
+                fb[1] = 0;
+                fb[0] = 0;
+            }
 		} else if (lsv == LUA_ERRMEM) {
 			//printk("LUA_ERRMEM\n");
+            unsigned char* fb = smuggled->GOPBase;
+            unsigned char* fbend = smuggled->GOPBase;
+            fb += (smuggled->GOPSize / 4);
+            fbend += (smuggled->GOPSize / 4);
+            for (; fb < fbend; fb += 4) {
+                fb[2] = 255;
+                fb[1] = 0;
+                fb[0] = 0;
+            }
 		} else if (lsv == LUA_ERRGCMM) {
 			//printk("LUA_ERRGCMM\n");
+            unsigned char* fb = smuggled->GOPBase;
+            unsigned char* fbend = smuggled->GOPBase;
+            fb += (smuggled->GOPSize / 4);
+            fb += (smuggled->GOPSize / 4);
+            fbend += (smuggled->GOPSize / 4);
+            for (; fb < fbend; fb += 4) {
+                fb[2] = 255;
+                fb[1] = 0;
+                fb[0] = 0;
+            }
 		} else {
 			//printki(lsv); printk("\n");
+            unsigned char* fb = smuggled->GOPBase;
+            unsigned char* fbend = smuggled->GOPBase;
+            fb += (smuggled->GOPSize / 4);
+            fb += (smuggled->GOPSize / 4);
+            fb += (smuggled->GOPSize / 4);
+            fbend += (smuggled->GOPSize / 4);
+            for (; fb < fbend; fb += 4) {
+                fb[2] = 255;
+                fb[1] = 0;
+                fb[0] = 0;
+            }
 		}
 		//reportlua(l);
 		return;
