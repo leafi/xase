@@ -1,0 +1,21 @@
+Lua 5.3.1, with http://lua-users.org/files/wiki_insecure/power_patches/5.3/NoFlua-5.3.1.patch to disable the use of floating point.
+
+luaconf.h stuff adjusted to enable said patch
+
+Wahey, no need to adjust lbitlib.c's LUA_NBITS any more - bitwise operations are now native to the language!
+
+mini-c lib thanks to the indispensible post at http://lua-users.org/lists/lua-l/2008-05/msg00666.html , and bits of tcc headers
+
+(for hacks, grep 'leafi')
+
+NOTE TO SELF: check setjmp.S! do we have to do that artifical pop, to stop the stack being eventually flooded?
+
+I have totally failed to implement sprintf. Need to do that, like.
+
+Disabled lmathlib.c, as it only contains functions that make sense when you have floating point support.
+
+Hacked out db_debug in ldblib.c; no fprintf(!)
+
+Disabling loslib.c. There's no OS, which is hampering implementation.
+
+Disabling liolib.c. No filesystem.
