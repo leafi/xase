@@ -1,4 +1,4 @@
-char *_ultramem = 0x800000;
+char *_ultramem = (char *)0x800000;
 int _allocs = 0;
 int _frees = 0;
 
@@ -29,6 +29,9 @@ unsigned char* fb1;
 
 void _start()
 {
+	long long * test = (long long *)0x600000;
+	*test = 0x123456789abcdef;
+
 	//outb(0xe9, 'a');
 	oldSmuggle = (Smuggle*)0x400000;
 	newSmuggle.GOPBase = oldSmuggle->GOPBase;
@@ -63,7 +66,7 @@ void _outb(unsigned short port, unsigned char val)
 
 void printk(const char *s)
 {
-	for (char *t = s; *t != 0; t++)
+	for (const char *t = s; *t != 0; t++)
 	{
 		if (*t == '\n')
 			_outb(0xe9, '\r');

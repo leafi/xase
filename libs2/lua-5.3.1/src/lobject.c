@@ -355,20 +355,30 @@ static void pushstr (lua_State *L, const char *str, size_t l) {
   setsvalue2s(L, L->top++, luaS_newlstr(L, str, l));
 }
 
+extern void printk(const char *s);
 
 /* this function handles only '%d', '%c', '%f', '%p', and '%s' 
    conventional formats, plus Lua-specific '%I' and '%U' */
 const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp) {
   int n = 0;
+  //char tmpLeafErr[2];
   for (;;) {
     const char *e = strchr(fmt, '%');
     if (e == NULL) break;
     luaD_checkstack(L, 2);  /* fmt + item */
     pushstr(L, fmt, e - fmt);
+	/*tmpLeafErr[0] = *(e + 1);
+	tmpLeafErr[1] = 0;
+	printk(tmpLeafErr);*/
     switch (*(e+1)) {
       case 's': {
         const char *s = va_arg(argp, char *);
         if (s == NULL) s = "(null)";
+		//tmpLeafErr[0] = '0' + strlen(s);
+		/*printk(tmpLeafErr);
+		printk("{");
+		printk(s);
+		printk("}");*/
         pushstr(L, s, strlen(s));
         break;
       }

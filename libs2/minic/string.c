@@ -15,12 +15,20 @@ size_t strlen(const char *s)
 
 char *strchr(const char *s, int c)
 {
-	while (*s != c && *s != 0) s++;
-	return (*s == c) ? (char*)s : NULL;
+	//printk("{1}");
+	/*while (*s != c && *s != 0) s++;
+	return (*s == c) ? (char*)s : NULL;*/
+	do
+	{
+		if (*s == (char)c)
+			return (char *)s;
+	} while (*s++);
+	return NULL;
 }
 
 char *strcpy(char *d, const char *s)
 {
+	printk("{2}");
 	char *t = d;
 	while ((*t++ = *s++));
 	return d;
@@ -28,6 +36,7 @@ char *strcpy(char *d, const char *s)
 
 char *strncpy(char *d, const char *s, size_t n)
 {
+	printk("{3}");
 	char *t = d;
 	while (n-- && (*t++ = *s++));
 #if 0
@@ -38,24 +47,33 @@ char *strncpy(char *d, const char *s, size_t n)
 
 char *strcat(char *d, const char *s)
 {
+	printk("{4}");
 	return strcpy(d + strlen(d), s);
 }
 
 char *strncat(char *d, const char *s, size_t n)
 {
+	printk("{5}");
 	return strncpy(d + strlen(d), s, n);
 }
 
 int strcmp(const char *s1, const char *s2)
 {
+	//printk("{6}");
 	const unsigned char *a = s1;
 	const unsigned char *b = s2;
-	while (*a == *b && *a != 0 && *b != 0) a++, b++;
+	//while (*a == *b && *a != 0 && *b != 0) a++, b++;
+	while ((*a) && (*a == *b))
+	{
+		++a;
+		++b;
+	}
 	return *a - *b;
 }
 
 int strncmp(const char *s1, const char *s2, int n)
 {
+	printk("{7}");
 	const unsigned char *a = s1;
 	const unsigned char *b = s2;
 	int j = 0;
@@ -65,11 +83,13 @@ int strncmp(const char *s1, const char *s2, int n)
 
 int strcoll(const char *s1, const char *s2)
 {
+	printk("{8}");
 	return strcmp(s1, s2);
 }
 
 size_t strcspn(const char *s, const char *reject)
 {
+	printk("{9}");
 	size_t n = 0;
 	for (n = 0; *s; n++, s++)
 	{
@@ -91,20 +111,27 @@ int memcmp(const void *s1, const void *s2, size_t n)
 {
 	const unsigned char *a = s1;
 	const unsigned char *b = s2;
-	if (n == 0) return 0;
-	while (--n && *a == *b) a++, b++;
-	return *a - *b;
+	while (n--)
+	{
+		if (*a != *b)
+			return *a - *b;
+		++a;
+		++b;
+	}
+	return 0;
 }
 
 char* the_err = "ENOSYS";
 
 char *strerror(int errnum) {
+	printk("{c}");
 	return the_err;
 }
 
 /* ripped; 3-clause bsd, apple xnu (google is as google does) */
 char *strstr(const char *in, const char *str)
 {
+	printk("{d}");
 	char c;
 	size_t len;
 
@@ -128,6 +155,7 @@ char *strstr(const char *in, const char *str)
 
 // me!
 size_t strspn(const char *s, const char *accept) {
+	printk("{e}");
 	const char *a = s;
 	const char *b = accept;
 	size_t n = 0;
@@ -192,6 +220,7 @@ int ispunct(int c) {
 }
 
 void *memchr(const void *ptr, int value, size_t num) {
+	printk("{f}");
 	unsigned char *p = (unsigned char *)ptr;
 
 	for (int i = 0; i < num; i++) {
@@ -204,10 +233,11 @@ void *memchr(const void *ptr, int value, size_t num) {
 }
 
 char *strpbrk(const char *s, const char *chars) {
+	printk("{g}");
 	for (; *s != 0; s++) {
 		for (const char *ohch; *ohch != 0; ohch++) {
 			if (*s == *ohch) {
-				return s;
+				return (char *)s;
 			}
 		}
 	}

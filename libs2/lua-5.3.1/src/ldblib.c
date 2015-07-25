@@ -398,8 +398,10 @@ static int db_gethook (lua_State *L) {
   return 3;
 }
 
+void printk(const char *s);
 
 static int db_debug (lua_State *L) {
+  printk("ETODOLUA(db_debug)");
   for (;;) {
 	/* leafi: hacking out; no fprintf */
     /*char buffer[250];

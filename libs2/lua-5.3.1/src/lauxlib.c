@@ -25,7 +25,7 @@
 
 #include "lauxlib.h"
 
-extern void printk(char *s);
+extern void printk(const char *s);
 
 /*
 ** {======================================================
@@ -954,6 +954,8 @@ static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
 
 
 static int panic (lua_State *L) {
+
+	printk("ETODOLUA(panic)");
   /* leafi: no fprintf!! this is going to hurt debuggability, i know.. */
   /*lua_writestringerror("PANIC: unprotected error in call to Lua API (%s)\n",
                         lua_tostring(L, -1));*/

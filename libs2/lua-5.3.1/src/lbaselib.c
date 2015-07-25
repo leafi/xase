@@ -20,8 +20,10 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+void printk(const char *s);
 
 static int luaB_print (lua_State *L) {
+	printk("ETODOluaB_print");
   int n = lua_gettop(L);  /* number of arguments */
   int i;
   lua_getglobal(L, "tostring");

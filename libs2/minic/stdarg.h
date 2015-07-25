@@ -4,7 +4,7 @@
 #define _STDARG_H
 
 /*#ifdef __x86_64__
-#ifndef _WIN64
+#ifndef _WIN64*/
 
 typedef void *va_list;
 
@@ -19,8 +19,8 @@ void __va_end(va_list ap);
 #define va_copy(dest, src) ((dest) = __va_copy(src))
 #define va_end(ap) __va_end(ap)
 
-#else /* _WIN64 */
-typedef char *va_list;
+/*#else /* _WIN64 */
+/*typedef char *va_list;
 #define va_start(ap,last) ap = ((char *)&(last)) + ((sizeof(last)+7)&~7)
 #define va_arg(ap,type) (ap += (sizeof(type)+7)&~7, *(type *)(ap - ((sizeof(type)+7)&~7)))
 #define va_copy(dest, src) (dest) = (src)

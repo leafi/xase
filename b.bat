@@ -63,11 +63,14 @@ echo (root).lcode
 tools\LuaToHex\LuaToHex\bin\Debug\LuaToHex.exe lcode.lua >build\lcode.c || pause
 %CC% -Wall -o build\base\lcode.o -c build\lcode.c || pause
 
+echo libtcc1
+%CC% -Wall -Ilibs2\minic -o build\libtcc1.o -c libs2\libtcc1.c || pause
+
 echo Linking...
 set P=build\lua\
 set B=build\base\
 set M=build\minic\
-%CC% -nostdlib -Wl,-Ttext,0x100000 -Wl,--oformat,binary -static %B%start.o %B%lua2.o %B%lcode.o %P%lapi.o %P%lauxlib.o %P%lbaselib.o %P%lbitlib.o %P%lcode.o %P%lcorolib.o %P%lctype.o %P%ldblib.o %P%ldebug.o %P%ldo.o %P%ldump.o %P%lfunc.o %P%lgc.o %P%linit.o %P%llex.o %P%lmem.o %P%loadlib.o %P%lobject.o %P%lopcodes.o %P%lparser.o %P%lstate.o %P%lstring.o %P%lstrlib.o %P%ltable.o %P%ltablib.o %P%ltm.o %P%lundump.o %P%lutf8lib.o %P%lvm.o %P%lzio.o %M%math.o %M%setjmp.o %M%stdio.o %M%stdlib.o %M%string.o -o build\KERNEL64.SYS
+%CC% -nostdlib -Wl,-Ttext,0x100000 -Wl,--oformat,binary -static %B%start.o build\libtcc1.o %B%lua2.o %B%lcode.o %P%lapi.o %P%lauxlib.o %P%lbaselib.o %P%lbitlib.o %P%lcode.o %P%lcorolib.o %P%lctype.o %P%ldblib.o %P%ldebug.o %P%ldo.o %P%ldump.o %P%lfunc.o %P%lgc.o %P%linit.o %P%llex.o %P%lmem.o %P%loadlib.o %P%lobject.o %P%lopcodes.o %P%lparser.o %P%lstate.o %P%lstring.o %P%lstrlib.o %P%ltable.o %P%ltablib.o %P%ltm.o %P%lundump.o %P%lutf8lib.o %P%lvm.o %P%lzio.o %M%math.o %M%setjmp.o %M%stdio.o %M%stdlib.o %M%string.o -o build\KERNEL64.SYS
 
 echo Composing...
 copy /y tools\empty_64mb_fat32.img fat.img
