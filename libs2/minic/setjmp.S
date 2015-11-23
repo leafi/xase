@@ -28,10 +28,10 @@ setjmp:
 	push %rsi			# Make the call/return stack happy
 	movq %rbp,16(%rdi)
 	# does tcc just not support r12,13,14,15...?
-	# movq %r12,24(%rdi)
-	# movq %r13,32(%rdi)
-	# movq %r14,40(%rdi)
-	# movq %r15,48(%rdi)
+	movq %r12,24(%rdi)
+	movq %r13,32(%rdi)
+	movq %r14,40(%rdi)
+	movq %r15,48(%rdi)
 	movq %rsi,56(%rdi)		# Return address
 	ret
 
@@ -47,10 +47,10 @@ longjmp:
 	movq (%rdi),%rbx
 	movq 8(%rdi),%rsp
 	movq 16(%rdi),%rbp
-	# movq 24(%rdi),%r12
-	# movq 32(%rdi),%r13
-	# movq 40(%rdi),%r14
-	# movq 48(%rdi),%r15
+	movq 24(%rdi),%r12
+	movq 32(%rdi),%r13
+	movq 40(%rdi),%r14
+	movq 48(%rdi),%r15
 	jmp *56(%rdi)
 
 	.size longjmp,.-longjmp

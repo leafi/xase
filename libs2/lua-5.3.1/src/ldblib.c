@@ -402,9 +402,9 @@ void printk(const char *s);
 
 static int db_debug (lua_State *L) {
   printk("ETODOLUA(db_debug)");
-  for (;;) {
-	/* leafi: hacking out; no fprintf */
-    /*char buffer[250];
+  /* leafi: hacking out; no fprintf */
+  /*for (;;) {
+    char buffer[250];
     lua_writestringerror("%s", "lua_debug> ");
     if (fgets(buffer, sizeof(buffer), stdin) == 0 ||
         strcmp(buffer, "cont\n") == 0)
@@ -412,8 +412,8 @@ static int db_debug (lua_State *L) {
     if (luaL_loadbuffer(L, buffer, strlen(buffer), "=(debug command)") ||
         lua_pcall(L, 0, 0, 0))
       lua_writestringerror("%s\n", lua_tostring(L, -1));
-    lua_settop(L, 0);  /* remove eventual returns */
-  }
+    lua_settop(L, 0);
+  }*/
 }
 
 
