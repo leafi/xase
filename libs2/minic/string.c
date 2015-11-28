@@ -13,6 +13,17 @@ size_t strlen(const char *s)
 	return n;
 }
 
+// vvv ripped from PDCLib vvv
+size_t strnlen( const char * s, size_t maxlen )
+{
+	for( size_t len = 0; len != maxlen; len++ )
+	{
+		if(s[len] == '\0')
+			return len;
+	}
+	return maxlen;
+}
+
 char *strchr(const char *s, int c)
 {
 	//printk("{1}");
@@ -60,25 +71,25 @@ char *strncat(char *d, const char *s, size_t n)
 int strcmp(const char *s1, const char *s2)
 {
 	//printk("{6}");
-	const unsigned char *a = s1;
-	const unsigned char *b = s2;
+	const char *a = s1;
+	const char *b = s2;
 	//while (*a == *b && *a != 0 && *b != 0) a++, b++;
 	while ((*a) && (*a == *b))
 	{
 		++a;
 		++b;
 	}
-	return *a - *b;
+	return ((unsigned char)*a) - ((unsigned char)*b);
 }
 
 int strncmp(const char *s1, const char *s2, int n)
 {
 	printk("{7}");
-	const unsigned char *a = s1;
-	const unsigned char *b = s2;
+	const char *a = s1;
+	const char *b = s2;
 	int j = 0;
 	while (j < n && *a == *b && *a != 0 && *b != 0) a++, b++, j++;
-	return *a - *b;
+	return ((unsigned char)*a) - ((unsigned char)*b);
 }
 
 int strcoll(const char *s1, const char *s2)
@@ -220,7 +231,7 @@ int ispunct(int c) {
 }
 
 void *memchr(const void *ptr, int value, size_t num) {
-	printk("{f}");
+	//printk("{f}");
 	unsigned char *p = (unsigned char *)ptr;
 
 	for (int i = 0; i < num; i++) {
@@ -232,7 +243,7 @@ void *memchr(const void *ptr, int value, size_t num) {
 	return NULL;
 }
 
-char *strpbrk(const char *s, const char *chars) {
+/*char *strpbrk(const char *s, const char *chars) {
 	printk("{g}");
 	for (; *s != 0; s++) {
 		for (const char *ohch; *ohch != 0; ohch++) {
@@ -244,4 +255,23 @@ char *strpbrk(const char *s, const char *chars) {
 	if (*s == 0) {
 		return NULL;
 	}
+}*/
+
+char * strpbrk( const char * s1, const char * s2 )
+{
+    const char * p1 = s1;
+    const char * p2;
+    while ( *p1 )
+    {
+        p2 = s2;
+        while ( *p2 )
+        {
+            if ( *p1 == *p2++ )
+            {
+                return (char *) p1;
+            }
+        }
+        ++p1;
+    }
+    return NULL;
 }

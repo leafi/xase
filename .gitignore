@@ -1,3 +1,6 @@
+.buildpath
+.project
+.settings
 fat.img
 KERNEL64.SYS
 build/

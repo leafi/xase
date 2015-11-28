@@ -7,6 +7,8 @@
 
 size_t strlen(const char *s);
 
+size_t strnlen(const char *s, size_t maxlen);
+
 char *strchr(const char *s, int c);
 
 char *strcpy(char *d, const char *s);

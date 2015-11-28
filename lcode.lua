@@ -1,4 +1,4 @@
-kx.printk("hi from lua! <3\n")
+print("hi from lua! <3")
 
 local y, n, fr = kx.ultramem()
 
@@ -55,25 +55,8 @@ local function toHex(x)
 	return "0x" .. s
 end
 
-kx.printk("ultramem: ptr ")
-kx.printk(toHex(y))
-kx.printk(" (")
-kx.printk(toHex(y - 0x800000))
-kx.printk(" bytes, ")
-kx.printk(toHex(n))
-kx.printk(" allocs, ")
-kx.printk(toHex(fr))
-kx.printk(" free attempts)\n")
-
-kx.printk(toHex(kx.peekub(0x600000)))
-kx.printk(" ")
-kx.printk(toHex(kx.peekuw(0x600000)))
-kx.printk(" ")
-kx.printk(toHex(kx.peekud(0x600000)))
-kx.printk(" ")
-kx.printk(toHex(kx.peeksq(0x600000)))
-kx.printk("\n")
-
+print(string.format("ultramem: ptr 0x%x (%d bytes, %d allocs, %d free attempts)", y, y - 0x800000, n, fr))
+print(string.format("peeks: ub 0x%x, uw 0x%x, ud 0x%x, sq 0x%x", kx.peekub(0x600000), kx.peekuw(0x600000), kx.peekud(0x600000), kx.peeksq(0x600000)))
 
 -------------------------
 -- enumerating pci bus.. 
@@ -103,10 +86,7 @@ local function checkNet(bus, slot, fun)
   local vd = pciread(bus, slot, fun, 0)
   local ven = vd & 0xffff
   local dev = (vd >> 16) & 0xffff
-  kx.printk("ven ")
-  kx.printk(toHex(ven))
-  kx.printk(" dev ")
-  kx.printk(toHex(dev))
+  kx.printk(string.format("ven 0x%x dev 0x%x", ven, dev))
 end
 
 local function checkUsb(bus, slot, fun)

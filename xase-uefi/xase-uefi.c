@@ -21,6 +21,9 @@ EFI_SYSTEM_TABLE* ST;
 typedef struct {
     void* GOPBase;
     UINT64 GOPSize;
+    UINT32 GOPHorizontalResolution;
+    UINT32 GOPVerticalResolution;
+    UINT32 GOPPixelsPerScanLine;
 } Smuggle;
 
 /**
@@ -249,6 +252,9 @@ UefiMain (
     Smuggle* smuggle = (Smuggle*) 0x400000;
     smuggle->GOPBase = (void*) Gop->Mode->FrameBufferBase;
     smuggle->GOPSize = (UINT64) Gop->Mode->FrameBufferSize;
+    smuggle->GOPHorizontalResolution = (UINT32) Gop->Mode->Info->HorizontalResolution;
+    smuggle->GOPVerticalResolution = (UINT32) Gop->Mode->Info->VerticalResolution;
+    smuggle->GOPPixelsPerScanLine = (UINT32) Gop->Mode->Info->PixelsPerScanLine;
 
     for (UINT64 j = Gop->Mode->FrameBufferBase; j < Gop->Mode->FrameBufferBase + Gop->Mode->FrameBufferSize; j += 4) {
         UINT8* x = (UINT8*)j;

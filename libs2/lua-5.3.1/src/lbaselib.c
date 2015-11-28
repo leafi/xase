@@ -21,9 +21,10 @@
 #include "lualib.h"
 
 void printk(const char *s);
+void printkn(const char *s, int n);
 
 static int luaB_print (lua_State *L) {
-	printk("ETODOluaB_print");
+	//printk("ETODOluaB_print");
   int n = lua_gettop(L);  /* number of arguments */
   int i;
   lua_getglobal(L, "tostring");
@@ -36,13 +37,11 @@ static int luaB_print (lua_State *L) {
     s = lua_tolstring(L, -1, &l);  /* get result */
     if (s == NULL)
       return luaL_error(L, "'tostring' must return a string to 'print'");
-	// leafi: no stdout!
-    /*if (i>1) lua_writestring("\t", 1);
-    lua_writestring(s, l);*/
+    if (i>1) lua_writestring("\t", 1);
+    lua_writestring(s, l);
     lua_pop(L, 1);  /* pop result */
   }
-  // leafi: no stdout
-  //lua_writeline();
+  lua_writeline();
   return 0;
 }
 

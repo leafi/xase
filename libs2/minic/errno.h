@@ -9,7 +9,7 @@
 #define _INC_ERRNO
 
 /* leafi: fuck this */
-#define errno 40
+extern int errno;
 
 /*#ifndef _CRT_ERRNO_DEFINED
 #define _CRT_ERRNO_DEFINED

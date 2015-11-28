@@ -414,6 +414,7 @@ static int db_debug (lua_State *L) {
       lua_writestringerror("%s\n", lua_tostring(L, -1));
     lua_settop(L, 0);
   }*/
+  return 0;
 }
 
 

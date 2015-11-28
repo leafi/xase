@@ -61,6 +61,7 @@ minicc math || exit 1
 minicc stdio || exit 1
 minicc stdlib || exit 1
 minicc string || exit 1
+minicc errno || exit 1
 
 echo "minic/setjmp (ASM)"
 $CC -o build/minic/setjmp.o -c libs2/minic/setjmp.S || exit 1
@@ -82,7 +83,7 @@ echo "Linking..."
 export P="build/lua/"
 export B="build/base/"
 export M="build/minic/"
-$CC -ffreestanding -T linker.ld -nostdlib -lgcc -o build/KERNEL64.SYS ${B}start.o ${B}lua2.o ${B}lcode.o ${P}lapi.o ${P}lauxlib.o ${P}lbaselib.o ${P}lbitlib.o ${P}lcode.o ${P}lcorolib.o ${P}lctype.o ${P}ldblib.o ${P}ldebug.o ${P}ldo.o ${P}ldump.o ${P}lfunc.o ${P}lgc.o ${P}linit.o ${P}llex.o ${P}lmem.o ${P}loadlib.o ${P}lobject.o ${P}lopcodes.o ${P}lparser.o ${P}lstate.o ${P}lstring.o ${P}lstrlib.o ${P}ltable.o ${P}ltablib.o ${P}ltm.o ${P}lundump.o ${P}lutf8lib.o ${P}lvm.o ${P}lzio.o ${M}math.o ${M}setjmp.o ${M}stdio.o ${M}stdlib.o ${M}string.o
+$CC -ffreestanding -T linker.ld -nostdlib -lgcc -o build/KERNEL64.SYS ${B}start.o ${B}lua2.o ${B}lcode.o ${P}lapi.o ${P}lauxlib.o ${P}lbaselib.o ${P}lbitlib.o ${P}lcode.o ${P}lcorolib.o ${P}lctype.o ${P}ldblib.o ${P}ldebug.o ${P}ldo.o ${P}ldump.o ${P}lfunc.o ${P}lgc.o ${P}linit.o ${P}llex.o ${P}lmem.o ${P}loadlib.o ${P}lobject.o ${P}lopcodes.o ${P}lparser.o ${P}lstate.o ${P}lstring.o ${P}lstrlib.o ${P}ltable.o ${P}ltablib.o ${P}ltm.o ${P}lundump.o ${P}lutf8lib.o ${P}lvm.o ${P}lzio.o ${M}math.o ${M}setjmp.o ${M}stdio.o ${M}stdlib.o ${M}string.o ${M}errno.o
 
 echo "Composing..."
 cp tools/empty_64mb_fat32.img fat.img

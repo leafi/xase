@@ -1,6 +1,7 @@
 #ifndef __STDIO_H
 #define __STDIO_H
 
+#include <stdarg.h>
 #include <stddef.h>
 
 struct _iobuf {
@@ -16,6 +17,8 @@ struct _iobuf {
 typedef struct _iobuf FILE;
 
 int sprintf(char *buf, const char *fmt, ...);
+
+int vsnprintf(char *s, size_t n, const char *format, va_list arg);
 
 FILE *fopen(const char *filename, const char *mode);
 int fclose(FILE *f);

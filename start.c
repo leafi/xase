@@ -19,6 +19,9 @@ extern void the_lua(void);
 typedef struct {
 	unsigned char *GOPBase;
 	long GOPSize;
+    int GOPHorizontalResolution;
+    int GOPVerticalResolution;
+    int GOPPixelsPerScanLine;
 } Smuggle;
 
 Smuggle* oldSmuggle;
@@ -36,6 +39,9 @@ void _start()
 	oldSmuggle = (Smuggle*)0x400000;
 	newSmuggle.GOPBase = oldSmuggle->GOPBase;
 	newSmuggle.GOPSize = oldSmuggle->GOPSize;
+    newSmuggle.GOPHorizontalResolution = oldSmuggle->GOPHorizontalResolution;
+    newSmuggle.GOPVerticalResolution = oldSmuggle->GOPVerticalResolution;
+    newSmuggle.GOPPixelsPerScanLine = oldSmuggle->GOPPixelsPerScanLine;
 
 	Smuggle* smuggled = &newSmuggle;
 
@@ -71,6 +77,19 @@ void printk(const char *s)
 		if (*t == '\n')
 			_outb(0xe9, '\r');
 		_outb(0xe9, *t);
+	}
+}
+
+void printkn(const char *s, int n)
+{
+	for (int i = 0; i < n; i++) {
+		if (s[i] == 0) {
+			break;
+		}
+		if (s[i] == '\n') {
+			_outb(0xe9, '\r');
+		}
+		_outb(0xe9, s[i]);
 	}
 }
 
