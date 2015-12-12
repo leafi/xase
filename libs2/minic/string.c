@@ -39,7 +39,7 @@ char *strchr(const char *s, int c)
 
 char *strcpy(char *d, const char *s)
 {
-	printk("{2}");
+	//printk("{2}");
 	char *t = d;
 	while ((*t++ = *s++));
 	return d;

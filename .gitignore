@@ -7,4 +7,5 @@ build/
 *.swp
 tools/LuaToHex/LuaToHex.userprefs
 tools/LuaToHex/LuaToHex/obj/
+*.mdb
 

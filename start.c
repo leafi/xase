@@ -46,6 +46,7 @@ void _start()
 	Smuggle* smuggled = &newSmuggle;
 
 	printk("fb1");
+	fb1 = smuggled->GOPBase;
 
 	unsigned char* fb = smuggled->GOPBase;
 	unsigned char* fbend = fb;

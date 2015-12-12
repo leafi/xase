@@ -9,12 +9,13 @@ namespace LuaToHex
     {
         public static void Main(string[] args)
         {
-            Console.Write("char lcode[] = {");
+            var f = args[0].Replace(".", "_").Replace(" ", "_").Replace("/", "_").Replace(@"\", "_");
+            Console.Write("char " + f + "[] = {");
             var xs = File.ReadAllBytes(args[0]);
             var ys = xs.Select((x) => "0x" + x.ToString("x2"));
             Console.Write(string.Join(", ", ys));
             Console.Write(", 0x00");
-            Console.Write("};");
+            Console.Write("};\n");
         }
     }
 }

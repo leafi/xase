@@ -3,6 +3,8 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include <syslua.h>
+
 extern char *_ultramem;
 extern int _allocs;
 extern int _frees;
@@ -10,6 +12,7 @@ extern int _frees;
 extern void printk(const char *s);
 
 int lpeekub(lua_State *L);
+int lpokeub(lua_State *L);
 int lpeeksb(lua_State *L);
 int lpeekuw(lua_State *L);
 int lpeeksw(lua_State *L);
@@ -27,13 +30,14 @@ int loutb(lua_State *L);
 int loutw(lua_State *L);
 int loutd(lua_State *L);
 
+int lgohufont11(lua_State *L);
+int lgetgopbase(lua_State *L);
+
 LUAMOD_API int luaopen_bc(lua_State *L);
 
 void open_private_libs(lua_State *L);
 
 void the_lua(void);
-
-extern unsigned char lcode[];
 
 //= "kx.printk(\"hi from lua! <3\\n\")\nkx.printk(kx.ultramem())";
 
@@ -41,6 +45,7 @@ static const luaL_Reg kxlib[] = {
 	{ "printk", lprintk },
 	{ "ultramem", lultramem },
 	{ "peekub", lpeekub },
+	{ "pokeub", lpokeub },
 	{ "peeksb", lpeeksb },
 	{ "peekuw", lpeekuw },
 	{ "peeksw", lpeeksw },
@@ -53,6 +58,8 @@ static const luaL_Reg kxlib[] = {
 	{ "outb", loutb },
 	{ "outw", loutw },
 	{ "outd", loutd },
+  { "gohufont11", lgohufont11 },
+  { "getgopbase", lgetgopbase },
 	{ NULL, NULL }
 };
 
@@ -76,6 +83,17 @@ int lpeekub(lua_State *L)
 	lua_pop(L, 1);
 	lua_pushinteger(L, *addr);
 	return 1;
+}
+
+int lpokeub(lua_State *L)
+{
+  unsigned char *addr = (unsigned char *)lua_tointeger(L, 1);
+  printk("; ");
+  printk(lua_tostring(L, 1));
+  *addr = (unsigned char)lua_tointeger(L, 2);
+  printk(" ");
+  printk(lua_tostring(L, 2));
+  return 0;
 }
 
 int lpeeksb(lua_State *L)
@@ -177,16 +195,86 @@ int loutd(lua_State *L)
 	return 0;
 }
 
+int lgohufont11(lua_State *L)
+{
+  lua_pushstring(L, luasrc_gohufont11_bdf);
+  return 1;
+}
+
+extern unsigned char* fb1;
+
+int lgetgopbase(lua_State *L)
+{
+  lua_pushinteger(L, (lua_Integer)fb1);
+  return 1;
+}
+
 LUAMOD_API int luaopen_kx(lua_State *L)
 {
 	luaL_newlib(L, kxlib);
 	return 1;
 }
 
+void run_one_lua(lua_State *L, char* source)
+{
+	printk("rol luaL_loadstring ");
+	int lsv = luaL_loadstring(L, source);
+	if (lsv != LUA_OK)
+	{
+		if (lsv == LUA_ERRSYNTAX)
+		{
+			printk("ERR: LUA_ERRSYNTAX");
+		}
+		else if (lsv == LUA_ERRMEM)
+		{
+			printk("ERR: LUA_ERRMEM");
+		}
+		else if (lsv == LUA_ERRGCMM)
+		{
+			printk("ERR: LUA_ERRGCMM");
+		}
+		else
+		{
+			printk("ERR: OTHER");
+		}
+		printk("\n");
+		char *s = lua_tostring(L, -1);
+		printk(s);
+		return;
+	}
+	printk("lua_pcall:\n");
+	int pcv = lua_pcall(L, 0, LUA_MULTRET, 0);
+	if (pcv != LUA_OK)
+	{
+		printk("ERR: Runtime\n");
+		printk(lua_tostring(L, -1));
+		return;
+	}
+	printk("OK \n");
+}
+
+LUAMOD_API int luaopen_ps2(lua_State *L)
+{
+  printk("ps2.lua ");
+  run_one_lua(L, luasrc_ps2_lua);
+  return 1;
+}
+
+LUAMOD_API int luaopen_bdf(lua_State *L)
+{
+  printk("bdf_font.lua ");
+  run_one_lua(L, luasrc_bdf_font_lua);
+  return 1;
+}
+
 void open_private_libs(lua_State *L)
 {
-	luaL_requiref(L, "kx", luaopen_kx, 1);
-	lua_pop(L, 1);
+  luaL_requiref(L, "kx", luaopen_kx, 1);
+  lua_pop(L, 1);
+  luaL_requiref(L, "ps2", luaopen_ps2, 1);
+  lua_pop(L, 1);
+  luaL_requiref(L, "bdf", luaopen_bdf, 1);
+  lua_pop(L, 1);
 }
 
 void the_lua()
@@ -196,7 +284,7 @@ void the_lua()
 	luaL_openlibs(L);
 	open_private_libs(L);
 	printk("luaL_loadstring ");
-	int lsv = luaL_loadstring(L, lcode);
+	int lsv = luaL_loadstring(L, luasrc_lcode_lua);
 	if (lsv != LUA_OK)
 	{
 		if (lsv == LUA_ERRSYNTAX)
