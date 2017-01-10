@@ -1,0 +1,16 @@
+all master as of 2017-01-10:
+
+https://luapower.com/luajit/
+https://luapower.com/glue/
+https://luapower.com/pp/
+https://luapower.com/lfs/
+https://luapower.com/xxhash/
+https://luapower.com/time/
+https://luapower.com/luastate/
+https://luapower.com/thread/
+https://luapower.com/dynasm/
+
+all merged to luapower/ folder - but csrc/ from all archives excluded.
+
+luapower rocks.
+
