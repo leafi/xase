@@ -2,7 +2,7 @@ fat.img
 KERNEL64.SYS
 build/
 *.swp
-tools/LuaToHex/LuaToHex.userprefs
-tools/LuaToHex/LuaToHex/obj/
+host/tools/LuaToHex/LuaToHex.userprefs
+host/tools/LuaToHex/LuaToHex/obj/
 *.mdb
 
