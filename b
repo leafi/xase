@@ -7,13 +7,13 @@ export CC="$HOME/opt/cross/bin/x86_64-elf-gcc -ffreestanding -mno-red-zone -mno-
 libluacc ()
 {
   echo $1
-  $CC -Ilibs2/lua-5.3.1/src -Ilibs2/minic -o build/lua/${1}.o -c libs2/lua-5.3.1/src/${1}.c
+  $CC -I3rdparty/lua-5.3.1/src -I3rdparty/minic -o build/lua/${1}.o -c 3rdparty/lua-5.3.1/src/${1}.c
 }
 
 minicc ()
 {
   echo minic/$1
-  $CC -Ilibs2/minic -o build/minic/${1}.o -c libs2/minic/${1}.c
+  $CC -I3rdparty/minic -o build/minic/${1}.o -c 3rdparty/minic/${1}.c
 }
 
 syslua ()
@@ -72,7 +72,7 @@ minicc string || exit 1
 minicc errno || exit 1
 
 echo "minic/setjmp (ASM)"
-$CC -o build/minic/setjmp.o -c libs2/minic/setjmp.S || exit 1
+$CC -o build/minic/setjmp.o -c 3rdparty/minic/setjmp.S || exit 1
 
 echo "(root).start"
 $CC -o build/base/start.o -c start.c || exit 1
@@ -90,7 +90,7 @@ syslua gohufont11.bdf gohufont11_bdf || exit 1
 syslua gohufont14.bdf gohufont14_bdf || exit 1
 
 echo "(root).lua"
-$CC -Ilibs2/lua-5.3.1/src -Ilibs2/minic -Ibuild -o build/base/lua2.o -c lua2.c || exit 1
+$CC -I3rdparty/lua-5.3.1/src -I3rdparty/minic -Ibuild -o build/base/lua2.o -c lua2.c || exit 1
 
 # NO libtcc1
 
