@@ -1,9 +1,34 @@
 print("hi from lua! <3")
 
+print("load bdf..")
+
+-- global!
+function dprint(s)
+  kx.printk(s)
+  bdf.print(s)
+end
+
+assert(load(kxdata.luasrc_bdf_font_lua, "luasrc/bdf_font.lua"))()
+
+bdf.init()
+dprint("graphical framebuffer & bdf font up\n")
+dprint("ps2 init...\n")
+
+assert(load(kxdata.luasrc_ps2_lua, "luasrc/ps2.lua"))()
+ps2.init()
+
+dprint("PS2 OK\n")
+
+dprint("bisqit...\n")
+
+assert(load(kxdata.luasrc_bisqit_lua, "luasrc/bisqit.lua"))()
+bisqit.init()
+
+
 local y, n, fr = kx.ultramem()
 
-print(string.format("ultramem: ptr 0x%x (%d bytes, %d allocs, %d free attempts)", y, y - 0x800000, n, fr))
-print(string.format("peeks: ub 0x%x, uw 0x%x, ud 0x%x, sq 0x%x", kx.peekub(0x600000), kx.peekuw(0x600000), kx.peekud(0x600000), kx.peeksq(0x600000)))
+dprint(string.format("ultramem: ptr 0x%x (%d bytes, %d allocs, %d free attempts)\n", y, y - 0x800000, n, fr))
+dprint(string.format("peeks: ub 0x%x, uw 0x%x, ud 0x%x, sq 0x%x\n", kx.peekub(0x600000), kx.peekuw(0x600000), kx.peekud(0x600000), kx.peeksq(0x600000)))
 
 -------------------------
 -- enumerating pci bus.. 
@@ -33,24 +58,24 @@ local function checkNet(bus, slot, fun)
   local vd = pciread(bus, slot, fun, 0)
   local ven = vd & 0xffff
   local dev = (vd >> 16) & 0xffff
-  kx.printk(string.format("ven 0x%x dev 0x%x", ven, dev))
+  dprint(string.format("ven 0x%x dev 0x%x", ven, dev))
 end
 
 local function checkUsb(bus, slot, fun)
   local progif = (pciread(bus, slot, fun, 0x8) >> 8) & 0xff
   if progif == 0x00 then
-    kx.printk("USB1 UHCI")
+    dprint("USB1 UHCI")
   elseif progif == 0x10 then
-    kx.printk("USB1 OHCI")
+    dprint("USB1 OHCI")
   elseif progif == 0x20 then
-    kx.printk("USB2 EHCI")
+    dprint("USB2 EHCI")
   elseif progif == 0x80 then
-    kx.printk("USB ? (0x80)")
+    dprint("USB ? (0x80)")
   elseif progif == 0xfe then
-    kx.printk("USB (Not Host Controller) (0xfe)")
+    dprint("USB (Not Host Controller) (0xfe)")
   else
-    kx.printk("USB????? ")
-    kx.printk(string.format("0x%x", progif))
+    dprint("USB????? ")
+    dprint(string.format("0x%x", progif))
   end
 end 
 
@@ -68,15 +93,15 @@ local function checkFunc(bus, slot, fun)
   local thing8 = pciread(bus, slot, fun, 0x8)
   local baseClass = thing8 >> 24
   local subClass = (thing8 >> 16) & 0xff
-  kx.printk("\n")
-  kx.printk(string.format("0x%x", baseClass))
-  kx.printk(":")
-  kx.printk(string.format("0x%x", subClass))
-  kx.printk(" ")
-  kx.printk(pciByClass[baseClass][subClass][1])
+  dprint("\n")
+  dprint(string.format("0x%x", baseClass))
+  dprint(":")
+  dprint(string.format("0x%x", subClass))
+  dprint(" ")
+  dprint(pciByClass[baseClass][subClass][1])
   local cf = pciByClass[baseClass][subClass][2]
   if cf then
-    kx.printk("\n    ")
+    dprint("\n    ")
     cf(bus, slot, fun)
   end
   
@@ -108,13 +133,13 @@ end
 local isMulti = (pciGetHeaderType(0,0,0) & 0x80) > 0 
 
 if isMulti then
-  kx.printk("Multifunction device. TODO: CODE FOR THIS!!!")
+  dprint("Multifunction device. TODO: CODE FOR THIS!!!")
   return
 else
-  kx.printk("pci 0 is single-function; OK\n")
+  dprint("pci 0 is single-function; OK\n")
   checkBus(0)
 end
 
-bdf.init()
-bdf.test()
+dprint("\nEnd.")
+
 

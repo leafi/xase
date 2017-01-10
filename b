@@ -18,10 +18,12 @@ minicc ()
 
 syslua ()
 {
-  echo luasrc/$1
-  mono tools/LuaToHex/LuaToHex/bin/Debug/LuaToHex.exe luasrc/${1}.lua >>build/syslua.h
+  echo luasrc/${1}
+  mono tools/LuaToHex/LuaToHex/bin/Debug/LuaToHex.exe luasrc/${1} >>build/syslua.h
+  echo "  lua_pushstring(L, luasrc_${2});" >>build/syslua_kxdata_meta.h
+  echo "  lua_setfield(L, tableidx, \"luasrc_${2}\");" >>build/syslua_kxdata_meta.h
+  echo "  " >>build/syslua_kxdata_meta.h
 }
-
 
 mkdir build >/dev/null 2>&1
 mkdir build/minic >/dev/null 2>&1
@@ -77,13 +79,15 @@ $CC -o build/base/start.o -c start.c || exit 1
 
 echo "clumping syslua"
 rm build/syslua.h >/dev/null 2>&1
+rm build/syslua_kxdata_meta.h >/dev/null 2>&1
 
-syslua lcode || exit 1
-syslua ps2 || exit 1
-syslua bdf_font || exit 1
+syslua lcode.lua lcode_lua || exit 1
+syslua ps2.lua ps2_lua || exit 1
+syslua bdf_font.lua bdf_font_lua || exit 1
+syslua bisqit.lua bisqit_lua || exit 1
 
-echo luasrc/gohufont11.bdf
-mono tools/LuaToHex/LuaToHex/bin/Debug/LuaToHex.exe luasrc/gohufont11.bdf >>build/syslua.h || exit 1
+syslua gohufont11.bdf gohufont11_bdf || exit 1
+syslua gohufont14.bdf gohufont14_bdf || exit 1
 
 echo "(root).lua"
 $CC -Ilibs2/lua-5.3.1/src -Ilibs2/minic -Ibuild -o build/base/lua2.o -c lua2.c || exit 1

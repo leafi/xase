@@ -10,8 +10,12 @@ function bdf.parse(s)
     local word = string.match(line, "(%a+)")
 
     -- TODO: sizing, ascent/descent, all the meta shit...
-
-    if word == "STARTCHAR" then
+    
+    if word == "FONTBOUNDINGBOX" then
+      local x1, x2 = string.match(line, "FONTBOUNDINGBOX (%d+) (%d+)")
+      t.w = x1
+      t.h = x2
+    elseif word == "STARTCHAR" then
       local c = {comment=string.match(line, "%a+ ?(.*)")}
       for cline in lines do
         local cword = string.match(cline, "(%a+)")
@@ -27,7 +31,7 @@ function bdf.parse(s)
           c.bitmap = {}
           for bmpline in lines do
             if bmpline == "ENDCHAR" then break end
-            c.bitmap[#c.bitmap+1] = bmpline
+            c.bitmap[#c.bitmap+1] = tonumber(bmpline, 16)
           end
           break
         end
@@ -41,23 +45,60 @@ function bdf.parse(s)
 end
 
 function bdf.init()
-  bdf.font = bdf.parse(kx.gohufont11())
+  bdf.font = bdf.parse(kxdata.luasrc_gohufont14_bdf)
 end
 
-function bdf.test()
+-- bleh persistent vars for crappy print func
+local c = 0
+local screen_width = 800
+
+function bdf.print(msg)
   local f = bdf.font
   local vid = kx.getgopbase()
-  local msg = "hi there..."
+  --local msg = "Hi there, world(!)\n\nthis is a test\nof the system\to"
 
-  local stride = 800*4
+  local stride = screen_width*4
 
-  for y=1,15 do
-    kx.pokeub(vid+stride*y, 255)
-    kx.pokeub(vid+1+stride*y, 255)
-    kx.pokeub(vid+2+stride*y, 255)
-    --kx.pokeub(vid+3+stride*y, 255)
+  local longs = screen_width//f.w
+
+  local doublejump = stride * f.h
+
+  --local c = 0
+  for i=1,#msg do
+    if string.sub(msg,i,i) == "\n" then
+      c = ((c//longs)+1)*longs
+    else
+      local lst = vid+doublejump*(c//longs)+(c%longs)*4*f.w
+      local ch = f[string.byte(string.sub(msg,i,i))]
+      if not ch then ch = f[string.byte("?")] end
+      lst = lst + ch.x * 4
+      lst = lst + stride*(f.h-ch.h)
+      lst = lst + stride*(-ch.y)
+      if lst < vid then lst = lst - stride*(-ch.y) end
+
+      --print("pri ch x,y,w,h " .. ch.x .. " " .. ch.y .. " " .. ch.w .. " " .. ch.h)
+
+      for _, row in ipairs(ch.bitmap) do
+        local pad = 8-(ch.w%8)
+        if pad == 8 then pad = 0 end
+        local t = 1 << (ch.w-1+pad)
+        for x=1,ch.w do
+          if (row & t) > 0 then
+            kx.pokeub(lst+(x-1)*4, 255)
+            kx.pokeub(lst+(x-1)*4+1, 255)
+            kx.pokeub(lst+(x-1)*4+2, 255)
+          end
+          t = t >> 1
+        end
+
+        lst = lst + stride
+      end
+
+
+      c = c + 1
+    end
   end
-  
+
 end
 
 

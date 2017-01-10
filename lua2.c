@@ -5,6 +5,8 @@
 
 #include <syslua.h>
 
+#include <cpuid.h>
+
 extern char *_ultramem;
 extern int _allocs;
 extern int _frees;
@@ -33,7 +35,10 @@ int loutd(lua_State *L);
 int lgohufont11(lua_State *L);
 int lgetgopbase(lua_State *L);
 
-LUAMOD_API int luaopen_bc(lua_State *L);
+int lcpuid(lua_State *L);
+
+int lcpugetmsr(lua_State *L);
+int lcpusetmsr(lua_State *L);
 
 void open_private_libs(lua_State *L);
 
@@ -60,6 +65,9 @@ static const luaL_Reg kxlib[] = {
 	{ "outd", loutd },
   { "gohufont11", lgohufont11 },
   { "getgopbase", lgetgopbase },
+  { "cpuid", lcpuid },
+  { "cpugetmsr", lcpugetmsr },
+  { "cpusetmsr", lcpusetmsr },
 	{ NULL, NULL }
 };
 
@@ -88,11 +96,7 @@ int lpeekub(lua_State *L)
 int lpokeub(lua_State *L)
 {
   unsigned char *addr = (unsigned char *)lua_tointeger(L, 1);
-  printk("; ");
-  printk(lua_tostring(L, 1));
   *addr = (unsigned char)lua_tointeger(L, 2);
-  printk(" ");
-  printk(lua_tostring(L, 2));
   return 0;
 }
 
@@ -209,6 +213,42 @@ int lgetgopbase(lua_State *L)
   return 1;
 }
 
+int lcpuid(lua_State *L)
+{
+  unsigned int level = (unsigned int)lua_tointeger(L, 1);
+  unsigned int a;
+  unsigned int b;
+  unsigned int c;
+  unsigned int d;
+  int ok = __get_cpuid(level, &a, &b, &c, &d);
+  lua_pushinteger(L, ok);
+  lua_pushinteger(L, a);
+  lua_pushinteger(L, b);
+  lua_pushinteger(L, c);
+  lua_pushinteger(L, d);
+  return 5;
+}
+
+int lcpugetmsr(lua_State *L)
+{
+  unsigned int msr = (unsigned int)lua_tointeger(L, 1);
+  unsigned int lo;
+  unsigned int hi;
+  asm volatile("rdmsr" : "=a"(lo), "=d"(hi) : "c"(msr));
+  lua_pushinteger(L, lo);
+  lua_pushinteger(L, hi);
+  return 2;
+}
+
+int lcpusetmsr(lua_State *L)
+{
+  unsigned int msr = (unsigned int)lua_tointeger(L, 1);
+  unsigned int lo = (unsigned int)lua_tointeger(L, 2);
+  unsigned int hi = (unsigned int)lua_tointeger(L, 3);
+  asm volatile("wrmsr" : : "a"(lo), "d"(hi), "c"(msr));
+  return 0;
+}
+
 LUAMOD_API int luaopen_kx(lua_State *L)
 {
 	luaL_newlib(L, kxlib);
@@ -253,28 +293,29 @@ void run_one_lua(lua_State *L, char* source)
 	printk("OK \n");
 }
 
-LUAMOD_API int luaopen_ps2(lua_State *L)
-{
-  printk("ps2.lua ");
-  run_one_lua(L, luasrc_ps2_lua);
-  return 1;
-}
-
-LUAMOD_API int luaopen_bdf(lua_State *L)
-{
-  printk("bdf_font.lua ");
-  run_one_lua(L, luasrc_bdf_font_lua);
-  return 1;
-}
-
 void open_private_libs(lua_State *L)
 {
   luaL_requiref(L, "kx", luaopen_kx, 1);
   lua_pop(L, 1);
-  luaL_requiref(L, "ps2", luaopen_ps2, 1);
-  lua_pop(L, 1);
-  luaL_requiref(L, "bdf", luaopen_bdf, 1);
-  lua_pop(L, 1);
+
+  lua_newtable(L);
+  int tableidx = lua_gettop(L);
+
+  /*lua_pushstring(L, luasrc_gohufont11_bdf);
+  lua_setfield(L, tableidx, "luasrc_gohufont11_bdf");
+
+  lua_pushstring(L, luasrc_gohufont14_bdf);
+  lua_setfield(L, tableidx, "luasrc_gohufont14_bdf");
+
+  lua_pushstring(L, luasrc_ps2_lua);
+  lua_setfield(L, tableidx, "luasrc_ps2_lua");
+
+  lua_pushstring(L, luasrc_bdf_font_lua);
+  lua_setfield(L, tableidx, "luasrc_bdf_font_lua");*/
+
+  #include <syslua_kxdata_meta.h>
+
+  lua_setglobal(L, "kxdata");
 }
 
 void the_lua()
