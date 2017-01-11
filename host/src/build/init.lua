@@ -85,6 +85,7 @@ local sysluas = {
 
 for _,path in ipairs(sysluas) do
   local fullpath = 'target/src/lua/' .. path
+  local notfullpath = 'src/lua/' .. path
 
   local nom = 'luasrc_' .. path
   local fromto = {
@@ -95,7 +96,7 @@ for _,path in ipairs(sysluas) do
   }
   for _, ft in ipairs(fromto) do nom = string.gsub(nom, ft[1], ft[2]) end
 
-  print(' > ' .. nom .. ': ' .. string.sub(fullpath, 8))
+  print(' > ' .. nom .. ': ' .. notfullpath)
 
   local f = io.open(fullpath, 'rb')
   local fcontents = f:read('*a')
@@ -113,8 +114,13 @@ for _,path in ipairs(sysluas) do
   local bigpah = table.concat(pah, ', ')
   syslua_h:write('char ' .. nom .. '[] = {' .. bigpah .. '};\n')
 
+  syslua_kxdata_h:write('  lua_newtable(L);\n')
+  syslua_kxdata_h:write('  tmp = lua_gettop(L);\n')
+  syslua_kxdata_h:write('  lua_pushstring(L, "' .. notfullpath .. '");\n')
+  syslua_kxdata_h:write('  lua_setfield(L, tmp, "path");\n')
   syslua_kxdata_h:write('  lua_pushstring(L, ' .. nom .. ');\n')
-  syslua_kxdata_h:write('  lua_setfield(L, tableidx, "' .. nom .. '");\n')
+  syslua_kxdata_h:write('  lua_setfield(L, tmp, "bin");\n')
+  syslua_kxdata_h:write('  lua_setfield(L, tableidx, "' .. path .. '");\n')
   syslua_kxdata_h:write('  \n')
 end
 

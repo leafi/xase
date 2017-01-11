@@ -45,7 +45,7 @@ function bdf.parse(s)
 end
 
 function bdf.init()
-  bdf.font = bdf.parse(kxdata.luasrc_gohufont14_bdf)
+  bdf.font = bdf.parse(kxdata["gohufont14.bdf"].bin)
 end
 
 -- bleh persistent vars for crappy print func

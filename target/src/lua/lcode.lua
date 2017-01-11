@@ -8,20 +8,28 @@ function dprint(s)
   bdf.print(s)
 end
 
-assert(load(kxdata.luasrc_bdf_font_lua, "luasrc/bdf_font.lua"))()
+function requiron(subpath)
+  local kxd = kxdata[subpath]
+  assert(load(kxd.bin, kxd.path))()
+end
+
+requiron('bdf_font.lua')
+--assert(load(kxdata.luasrc_bdf_font_lua, "luasrc/bdf_font.lua"))()
 
 bdf.init()
 dprint("graphical framebuffer & bdf font up\n")
 dprint("ps2 init...\n")
 
-assert(load(kxdata.luasrc_ps2_lua, "luasrc/ps2.lua"))()
+requiron('ps2.lua')
+--assert(load(kxdata.luasrc_ps2_lua, "luasrc/ps2.lua"))()
 ps2.init()
 
 dprint("PS2 OK\n")
 
 dprint("bisqit...\n")
 
-assert(load(kxdata.luasrc_bisqit_lua, "luasrc/bisqit.lua"))()
+requiron('bisqit.lua')
+--assert(load(kxdata.luasrc_bisqit_lua, "luasrc/bisqit.lua"))()
 bisqit.init()
 
 

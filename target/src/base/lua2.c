@@ -300,6 +300,7 @@ void open_private_libs(lua_State *L)
 
   lua_newtable(L);
   int tableidx = lua_gettop(L);
+  int tmp;
 
   /*lua_pushstring(L, luasrc_gohufont11_bdf);
   lua_setfield(L, tableidx, "luasrc_gohufont11_bdf");
