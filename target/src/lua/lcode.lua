@@ -148,6 +148,8 @@ else
   checkBus(0)
 end
 
+requiron('ata_pio.lua')
+
 dprint("\nEnd.")
 
 

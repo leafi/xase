@@ -80,7 +80,8 @@ local syslua_h = io.open('target/.build/syslua.h', 'w+b')
 local syslua_kxdata_h = io.open('target/.build/syslua_kxdata_meta.h', 'w+b')
 
 local sysluas = {
-  'lcode.lua', 'ps2.lua', 'bdf_font.lua', 'bisqit.lua', 'gohufont11.bdf', 'gohufont14.bdf'
+  'lcode.lua', 'ps2.lua', 'bdf_font.lua', 'bisqit.lua', 'gohufont11.bdf', 'gohufont14.bdf',
+  'ata_pio.lua'
 }
 
 for _,path in ipairs(sysluas) do
