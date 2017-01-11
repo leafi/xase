@@ -1,8 +1,4 @@
 fat.img
-KERNEL64.SYS
-build/
+target/.build/
 *.swp
-host/tools/LuaToHex/LuaToHex.userprefs
-host/tools/LuaToHex/LuaToHex/obj/
-*.mdb
-
+.DS_Store

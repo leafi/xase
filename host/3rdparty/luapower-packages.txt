@@ -2,6 +2,7 @@ all master as of 2017-01-10:
 
 https://luapower.com/luajit/
 https://luapower.com/glue/
+https://luapower.com/tuple/
 https://luapower.com/pp/
 https://luapower.com/lfs/
 https://luapower.com/xxhash/

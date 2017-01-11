@@ -201,7 +201,7 @@ int loutd(lua_State *L)
 
 int lgohufont11(lua_State *L)
 {
-  lua_pushstring(L, target_src_lua_gohufont11_bdf);
+  lua_pushstring(L, luasrc_gohufont11_bdf);
   return 1;
 }
 
@@ -325,7 +325,7 @@ void the_lua()
 	luaL_openlibs(L);
 	open_private_libs(L);
 	printk("luaL_loadstring ");
-	int lsv = luaL_loadstring(L, target_src_lua_lcode_lua);
+	int lsv = luaL_loadstring(L, luasrc_lcode_lua);
 	if (lsv != LUA_OK)
 	{
 		if (lsv == LUA_ERRSYNTAX)
