@@ -1,0 +1,2 @@
+#!/bin/bash
+host/3rdparty/luapower/luajit host/src/ariel/init.lua $@

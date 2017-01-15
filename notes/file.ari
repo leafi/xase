@@ -1,0 +1,4 @@
+hi("there", 123, 123.0, 0x124);
+
+/* a comment */ if xb then print('something in between..."'); end
+
