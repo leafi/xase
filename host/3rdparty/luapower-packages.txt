@@ -10,6 +10,7 @@ https://luapower.com/time/
 https://luapower.com/luastate/
 https://luapower.com/thread/
 https://luapower.com/dynasm/
+https://luapower.com/utf8/
 
 all merged to luapower/ folder - but csrc/ from all archives excluded.
 
