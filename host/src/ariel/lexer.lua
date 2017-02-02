@@ -11,7 +11,7 @@ return function(path)
 
   local accum = ''
 
-  local keywords = {'function', 'if', 'then', 'end', 'else', 'elseif'}
+  local keywords = {'function', 'if', 'then', 'end', 'else', 'elseif', 'return', 'local'}
 
   local function matchAccum()
     if accum ~= '' then
@@ -36,7 +36,7 @@ return function(path)
     accum = ''
   end
 
-  local brackets = {'(', ')', '[', ']', '{', '}', ':', ';', '+', '*', ','}
+  local brackets = {'(', ')', '[', ']', '{', '}', ':', ';', '+', '*', ',', '='}
   local mode = 'normal'
 
   local function normalModeParse(byteidx, c)
